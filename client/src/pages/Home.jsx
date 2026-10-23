@@ -90,7 +90,7 @@ export default function Home({ clothes, loading, onProposeSwap }) {
 
         {loading ? (
           <div className="text-center py-20 text-gray-400 font-bold">
-            Loading clothes from MongoDB...
+            Loading clothes ......
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
