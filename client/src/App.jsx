@@ -774,6 +774,149 @@
 // }
 
 
+// import React, { useState, useEffect } from 'react';
+// import { Routes, Route, useLocation } from 'react-router-dom';
+// import Navbar from './components/Navbar';
+// import Footer from './components/Footer';
+// import AddItemModal from './components/AddItemModal';
+// import AuthModal from './components/AuthModal';
+// import { fetchListings, createListing } from './services/api';
+// import AdminPanel from './pages/AdminPanel';
+// import ItemDetail from './pages/ItemDetail';
+// import Profile from './pages/Profile';
+// import NearbyMap from './pages/NearbyMap';
+// import SwapHub from './pages/SwapHub';
+// import Home from './pages/Home';
+
+// export default function App() {
+//   const [clothes, setClothes] = useState([]);
+//   const [loading, setLoading] = useState(true);
+//   const [showAddModal, setShowAddModal] = useState(false);
+//   const [showAuthModal, setShowAuthModal] = useState(false);
+//   const [currentUser, setCurrentUser] = useState({ name: 'mohdrehan', email: 'rehan@example.com' });
+
+//   const location = useLocation();
+//   const isAdminRoute = location.pathname === '/admin';
+
+//   useEffect(() => {
+//     loadListings();
+//   }, []);
+
+//   const loadListings = async () => {
+//     try {
+//       setLoading(true);
+//       const data = await fetchListings();
+//       setClothes(Array.isArray(data) ? data : []);
+//     } catch (err) {
+//       console.error('API Error:', err);
+//       setClothes([]);
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   const handleAddItem = async (newItemData) => {
+//     try {
+//       const createdItem = await createListing(newItemData);
+//       setClothes((prev) => [createdItem, ...prev]);
+//       setShowAddModal(false);
+//     } catch (err) {
+//       console.error('Error adding item:', err);
+//     }
+//   };
+
+//   const handleDeleteListing = (id) => {
+//     if (window.confirm("Are you sure you want to remove this listing?")) {
+//       setClothes((prev) => prev.filter((c) => (c._id || c.id) !== id));
+//     }
+//   };
+
+//   const handleLogout = () => {
+//     setCurrentUser(null);
+//     // Do NOT modify admin state here
+//   };
+
+//   return (
+//     <div className="min-h-screen bg-gray-50 flex flex-col justify-between font-sans">
+//       <div>
+//         {/* HIDE USER NAVBAR ON ADMIN PAGE */}
+//         {!isAdminRoute && (
+//           <Navbar
+//             onOpenAddModal={() => setShowAddModal(true)}
+//             currentUser={currentUser}
+//             onOpenAuthModal={() => setShowAuthModal(true)}
+//             onLogout={handleLogout}
+//           />
+//         )}
+
+//         <main className="max-w-7xl mx-auto px-4 py-8">
+//           <Routes>
+//             <Route
+//               path="/"
+//               element={
+//                 <Home
+//                   clothes={clothes}
+//                   loading={loading}
+//                   onProposeSwap={(i) => alert(`Swap proposed for ${i.title}`)}
+//                 />
+//               }
+//             />
+//             <Route path="/swaps" element={<SwapHub />} />
+//             <Route
+//               path="/map"
+//               element={
+//                 <NearbyMap
+//                   clothes={clothes}
+//                   onProposeSwap={(i) => alert(`Swap proposed for ${i.title}`)}
+//                 />
+//               }
+//             />
+//             <Route 
+//               path="/profile" 
+//               element={<Profile userListings={clothes} currentUser={currentUser} />} 
+//             />
+//             <Route
+//               path="/item/:id"
+//               element={
+//                 <ItemDetail
+//                   clothes={clothes}
+//                   onProposeSwap={(i) => alert(`Swap proposed for ${i.title}`)}
+//                 />
+//               }
+//             />
+//             <Route
+//               path="/admin"
+//               element={
+//                 <AdminPanel
+//                   clothes={clothes}
+//                   onDeleteListing={handleDeleteListing}
+//                 />
+//               }
+//             />
+//           </Routes>
+//         </main>
+//       </div>
+
+//       <Footer />
+
+//       {showAddModal && (
+//         <AddItemModal
+//           onClose={() => setShowAddModal(false)}
+//           onItemAdded={handleAddItem}
+//         />
+//       )}
+
+//       {showAuthModal && (
+//         <AuthModal
+//           onClose={() => setShowAuthModal(false)}
+//           onLoginSuccess={(user) => setCurrentUser(user)}
+//         />
+//       )}
+//     </div>
+//   );
+// }
+
+
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
@@ -793,7 +936,12 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [currentUser, setCurrentUser] = useState({ name: 'mohdrehan', email: 'rehan@example.com' });
+
+  // Initialize from localStorage or default to null
+  const [currentUser, setCurrentUser] = useState(() => {
+    const savedUser = localStorage.getItem('currentUser');
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
 
   const location = useLocation();
   const isAdminRoute = location.pathname === '/admin';
@@ -831,9 +979,15 @@ export default function App() {
     }
   };
 
+  const handleLoginSuccess = (user) => {
+    setCurrentUser(user);
+    localStorage.setItem('currentUser', JSON.stringify(user));
+    setShowAuthModal(false);
+  };
+
   const handleLogout = () => {
     setCurrentUser(null);
-    // Do NOT modify admin state here
+    localStorage.removeItem('currentUser');
   };
 
   return (
@@ -909,7 +1063,7 @@ export default function App() {
       {showAuthModal && (
         <AuthModal
           onClose={() => setShowAuthModal(false)}
-          onLoginSuccess={(user) => setCurrentUser(user)}
+          onLoginSuccess={handleLoginSuccess}
         />
       )}
     </div>
