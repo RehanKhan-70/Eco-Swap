@@ -8,6 +8,11 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+const MONGO_URI = process.env.MONGO_URI;
+
+if (!MONGO_URI) {
+  console.error("MONGO_URI variable missing in environment!");
+}
 
 // Connect to MongoDB
 connectDB();
