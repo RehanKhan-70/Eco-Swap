@@ -963,13 +963,28 @@ export default function App() {
     }
   };
 
+  // const handleAddItem = async (newItemData) => {
+  //   try {
+  //     const createdItem = await createListing(newItemData);
+  //     setClothes((prev) => [createdItem, ...prev]);
+  //     setShowAddModal(false);
+  //   } catch (err) {
+  //     console.error('Error adding item:', err);
+  //   }
+  // };
   const handleAddItem = async (newItemData) => {
     try {
+      setLoading(true);
       const createdItem = await createListing(newItemData);
+      console.log('Successfully created item:', createdItem);
       setClothes((prev) => [createdItem, ...prev]);
       setShowAddModal(false);
+      alert('Listing created successfully!');
     } catch (err) {
       console.error('Error adding item:', err);
+      alert(`Error creating listing: ${err.message}`);
+    } finally {
+      setLoading(false);
     }
   };
 
