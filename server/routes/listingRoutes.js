@@ -5,6 +5,6 @@ const router = express.Router();
 
 router.get('/', getListings);
 router.post('/', createListing);
-router.post('/seed', seedListings);
+router.get('/seed', seedListings);
 
 export default router;
