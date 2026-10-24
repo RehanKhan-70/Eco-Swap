@@ -30,17 +30,23 @@
 //   }
 // };
 
-import mongoose from 'mongoose';
+
+
+import mongoose from "mongoose";
 
 export const connectDB = async (mongoURI) => {
   try {
-    const conn = await mongoose.connect(mongoURI, {
-      serverSelectionTimeoutMS: 15000, // Timeout limit increase for Render
+    const connection = await mongoose.connect(mongoURI, {
+      serverSelectionTimeoutMS: 15000,
     });
-    console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
+
+    console.log(
+      `MongoDB Connected: ${connection.connection.host}`
+    );
+
+    return connection;
   } catch (error) {
-    console.error(`❌ MongoDB Connection Error: ${error.message}`);
-    // Retry connection after 5 seconds instead of instant crash
-    setTimeout(() => connectDB(mongoURI), 5000);
+    console.error("MongoDB Connection Error:", error.message);
+    throw error;
   }
 };

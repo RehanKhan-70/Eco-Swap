@@ -68,7 +68,6 @@
 // // // // //   console.log(`🚀 Server running on port ${PORT}`);
 // // // // // });
 
-
 // // // // import express from 'express';
 // // // // import cors from 'cors';
 // // // // import dotenv from 'dotenv';
@@ -109,7 +108,6 @@
 // // // // app.listen(PORT, () => {
 // // // //   console.log(`🚀 Server running on port ${PORT}`);
 // // // // });
-
 
 // // // import express from 'express';
 // // // import cors from 'cors';
@@ -152,8 +150,6 @@
 // // //   console.log(`🚀 Server running on port ${PORT}`);
 // // // });
 
-
-
 // // import express from 'express';
 // // import cors from 'cors';
 // // import dotenv from 'dotenv';
@@ -189,7 +185,6 @@
 // // app.listen(PORT, () => {
 // //   console.log(`🚀 Server running on port ${PORT}`);
 // // });
-
 
 // import express from 'express';
 // import cors from 'cors';
@@ -267,47 +262,124 @@
 //   console.log(`🚀 Server running on port ${PORT}`);
 // });
 
+// import express from 'express';
+// import cors from 'cors';
+// import dotenv from 'dotenv';
+// import { connectDB } from './config/db.js';
+// import listingRoutes from './routes/listingRoutes.js';
+
+// dotenv.config();
+
+// const app = express();
+// const PORT = process.env.PORT || 5000;
+
+// // Direct MongoDB Connection String (No ENV dependence for Render)
+// const MONGO_URI = "mongodb+srv://rethreaduser:RethreadPass2026@cluster0.nwxc7xj.mongodb.net/rethread?retryWrites=true&w=majority";
+
+// // CORS Config
+// app.use(cors({
+//   origin: '*',
+//   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+//   allowedHeaders: ['Content-Type', 'Authorization']
+// }));
+
+// app.use(express.json({ limit: '10mb' }));
+// app.use(express.urlencoded({ limit: '10mb', extended: true }));
+
+// // Routes
+// app.use('/api/listings', listingRoutes);
+
+// app.get('/', (req, res) => {
+//   res.send('ReThread API is running live!');
+// });
+
+// // Connect DB first, then start listening
+// connectDB(MONGO_URI).then(() => {
+//   app.listen(PORT, () => {
+//     console.log(`🚀 Server running on port ${PORT}`);
+//   });
+// }).catch((err) => {
+//   console.error("Failed to connect to DB, starting server anyway...", err);
+//   app.listen(PORT, () => {
+//     console.log(`🚀 Server running on port ${PORT}`);
+//   });
+// });
 
 
-import express from 'express';
-import cors from 'cors';
-import dotenv from 'dotenv';
-import { connectDB } from './config/db.js';
-import listingRoutes from './routes/listingRoutes.js';
+import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
-dotenv.config();
+import { connectDB } from "./config/db.js";
+import listingRoutes from "./routes/listingRoutes.js";
+
+// Load environment variables from the server folder
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+dotenv.config({
+  path: path.join(__dirname, ".env"),
+});
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Direct MongoDB Connection String (No ENV dependence for Render)
-const MONGO_URI = "mongodb+srv://rethreaduser:RethreadPass2026@cluster0.nwxc7xj.mongodb.net/rethread?retryWrites=true&w=majority";
+// Middleware
+app.use(
+  cors({
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
-// CORS Config
-app.use(cors({
-  origin: '*',
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ limit: "10mb", extended: true }));
 
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ limit: '10mb', extended: true }));
+// API routes
+app.use("/api/listings", listingRoutes);
 
-// Routes
-app.use('/api/listings', listingRoutes);
-
-app.get('/', (req, res) => {
-  res.send('ReThread API is running live!');
-});
-
-// Connect DB first, then start listening
-connectDB(MONGO_URI).then(() => {
-  app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
-  });
-}).catch((err) => {
-  console.error("Failed to connect to DB, starting server anyway...", err);
-  app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
+// Health check route
+app.get("/", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "ReThread API is running!",
   });
 });
+
+// Start server after MongoDB connects
+const startServer = async () => {
+  try {
+    const uri = process.env.MONGO_URI?.trim();
+
+    if (!uri) {
+      throw new Error(
+        "MONGO_URI is missing. Check the server/.env file."
+      );
+    }
+
+    if (!/^mongodb(\+srv)?:\/\//.test(uri)) {
+      throw new Error(
+        "Invalid MONGO_URI format. It must start with mongodb:// or mongodb+srv://"
+      );
+    }
+
+    console.log("Mongo URI loaded:", Boolean(uri));
+    console.log("URI scheme valid:", true);
+
+    await connectDB(uri);
+
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  } catch (error) {
+    console.error("Server startup failed:", error.message);
+    process.exit(1);
+  }
+};
+
+startServer();
+
+
