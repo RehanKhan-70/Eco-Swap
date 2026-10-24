@@ -229,6 +229,46 @@
 //   console.log(`🚀 Server running on port ${PORT}`);
 // });
 
+// import express from 'express';
+// import cors from 'cors';
+// import dotenv from 'dotenv';
+// import { connectDB } from './config/db.js';
+// import listingRoutes from './routes/listingRoutes.js';
+
+// dotenv.config();
+
+// const app = express();
+// const PORT = process.env.PORT || 5000;
+
+// // Correct URI with fresh credentials
+// const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://rethreaduser:RethreadPass2026@cluster0.nwxc7xj.mongodb.net/rethread?retryWrites=true&w=majority";
+
+// // Connect to MongoDB
+// connectDB(MONGO_URI);
+
+// // CORS Config
+// app.use(cors({
+//   origin: '*',
+//   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+//   allowedHeaders: ['Content-Type', 'Authorization']
+// }));
+
+// app.use(express.json({ limit: '10mb' }));
+// app.use(express.urlencoded({ limit: '10mb', extended: true }));
+
+// // Routes
+// app.use('/api/listings', listingRoutes);
+
+// app.get('/', (req, res) => {
+//   res.send('ReThread API is running live!');
+// });
+
+// app.listen(PORT, () => {
+//   console.log(`🚀 Server running on port ${PORT}`);
+// });
+
+
+
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -240,11 +280,8 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Correct URI with fresh credentials
-const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://rethreaduser:RethreadPass2026@cluster0.nwxc7xj.mongodb.net/rethread?retryWrites=true&w=majority";
-
-// Connect to MongoDB
-connectDB(MONGO_URI);
+// Direct MongoDB Connection String (No ENV dependence for Render)
+const MONGO_URI = "mongodb+srv://rethreaduser:RethreadPass2026@cluster0.nwxc7xj.mongodb.net/rethread?retryWrites=true&w=majority";
 
 // CORS Config
 app.use(cors({
@@ -263,6 +300,14 @@ app.get('/', (req, res) => {
   res.send('ReThread API is running live!');
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+// Connect DB first, then start listening
+connectDB(MONGO_URI).then(() => {
+  app.listen(PORT, () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+  });
+}).catch((err) => {
+  console.error("Failed to connect to DB, starting server anyway...", err);
+  app.listen(PORT, () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+  });
 });
